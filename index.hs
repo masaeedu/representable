@@ -19,8 +19,8 @@ class Representable d k f | f -> d, f -> k where
   represent :: f :~> Representation d k
   tabulate  :: Representation d k :~> f
 
-index :: Representable d k f => f a -> k -> a
-index = snd . represent
+index :: Representable d k f => k -> f a -> a
+index = flip $ snd . represent
 
 instance Representable Int Int [] where
   represent xs = (length xs, (!!) xs)
@@ -41,5 +41,9 @@ id_ :: Representable d k f => f a -> f a
 id_ = tabulate . represent
 
 main :: IO ()
-main = print $ id_ $ Compose [[1, 2, 3, 4], [5, 6], [1, 2]]
--- => Compose [[1,2,3,4],[5,6],[1,2]]
+main = do
+  let example = [[1, 2, 3, 4], [5, 6], [1, 2]]
+  print $ id_ $ Compose example
+  -- => Compose [[1,2,3,4],[5,6],[1,2]]
+  print $ index (0, 3) $ Compose example
+  -- => 4
