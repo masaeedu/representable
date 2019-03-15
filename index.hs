@@ -12,7 +12,8 @@ import Data.Functor.Const
 import Data.Functor.Compose
 import Control.Applicative
 
-import Data.Map
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 type f :~> g = forall a. f a -> g a
 type Representation d k a = (d, k -> a)
@@ -28,9 +29,9 @@ instance Representable Int Int [] where
   represent xs = (length xs, (!!) xs)
   tabulate (l, f) = f <$> [0..(l - 1)]
 
-instance Ord k => Representable [k] k (Map k) where
-  represent m = (keys m, (!) m)
-  tabulate (ks, f) = fromList $ (\k -> (k, f k)) <$> ks
+instance Ord k => Representable (S.Set k) k (M.Map k) where
+  represent m = (M.keysSet m, (M.!) m)
+  tabulate (ks, f) = M.fromList $ (\k -> (k, f k)) <$> S.toList ks
 
 instance (Functor f, Representable d1 k1 f, Representable d2 k2 g)
          => Representable (f d2) (k1, k2) (Compose f g) where
@@ -53,7 +54,7 @@ main = do
   -- => Compose [[1,2,3,4],[5,6],[1,2]]
   print $ index (0, 3) example
   -- => 4
-  let example2 = Compose $ fromList [("foo", [1, 2, 3]), ("bar", [4, 5])]
+  let example2 = Compose $ M.fromList [("foo", [1, 2, 3]), ("bar", [4, 5])]
   print $ id_ example2
   -- => Compose (fromList [("bar",[4,5]),("foo",[1,2,3])])
   print $ index ("foo", 2) example2
