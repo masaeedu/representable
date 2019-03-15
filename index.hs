@@ -29,9 +29,9 @@ instance Representable Int Int [] where
 instance (Functor f, Representable d1 k1 f, Representable d2 k2 g)
          => Representable (f d2) (k1, k2) (Compose f g) where
 
-  represent (Compose fga) = (fmap fst frg, f) where
-    frg = fmap represent fga
-    f (k1, k2) = ($ k2) . snd . represent . ($ k1) . snd . represent $ fga
+  represent (Compose fga) = (domain, values) where
+    domain = fmap (fst . represent) fga
+    values (k1, k2) = index k2 . index k1 $ fga
 
   tabulate (fd2, f) = Compose x where
     x = let (d1, k1d2) = represent fd2
